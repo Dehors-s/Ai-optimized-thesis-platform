@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "defaults": {
+    "zh": {
+      "abstract": "generic_zh_abstract",
+      "method": "generic_zh_method",
+      "results": "generic_zh_results",
+      "discussion": "generic_zh_discussion"
+    },
+    "en": null
+  },
+  "entries": [
+    {
+      "journal": "测绘学报",
+      "language": "zh",
+      "discipline": "remote_sensing",
+      "profiles": {
+        "abstract": "rs_abstract",
+        "method": "rs_method",
+        "results": "rs_results",
+        "discussion": "rs_discussion"
+      }
+    },
+    {
+      "journal": "自动化学报",
+      "language": "zh",
+      "discipline": "computer_science",
+      "profiles": {
+        "abstract": "cs_abstract",
+        "method": "cs_method",
+        "results": "cs_results",
+        "discussion": "cs_discussion"
+      }
+    }
+  ]
+}

@@ -1,0 +1,169 @@
+{
+  "version": "0.1",
+  "meta": {
+    "title": "低资源文本分类中的类内方差：诊断与归一化",
+    "language": "zh",
+    "venue": "中文期刊（示例）",
+    "paper_type": "empirical",
+    "updated_at": "2026-11-09T02:00:00Z"
+  },
+  "thesis": {
+    "statement": "在 5-way 1-shot 文本分类中，类内方差是原型网络退化的主因；方差归一化可缩小与全监督的差距。",
+    "object": "5-way 1-shot 少样本文本分类",
+    "intervention": "在原型网络中引入类内方差归一化",
+    "effect": "macro-F1 从 71.3 提升至 78.5（+7.2），10-shot 下增益收窄至 +4.2",
+    "conditions": "FewRel 类数据集、BERT-base 骨干、5 个随机种子",
+    "falsifier": "若方差归一化后性能无提升，或方差与 shot 数无关，则主张被推翻。",
+    "scope": ["5-way", "1-shot 与 10-shot", "英文", "BERT-base"]
+  },
+  "claims": [
+    {
+      "id": "C1",
+      "parent": null,
+      "level": "subclaim",
+      "statement": "低资源退化主要来自类内方差，而非原型数量不足。",
+      "warrant": "控制原型数量后，方差仍能解释大部分性能差异。",
+      "qualifier": "限于 5-way 设定。",
+      "rebuttal": "类别高度重叠时方差解释力下降。",
+      "strength": "moderate",
+      "evidence_refs": [],
+      "argument_from": [],
+      "status": "supported"
+    },
+    {
+      "id": "P1.1",
+      "parent": "C1",
+      "level": "proposition",
+      "statement": "类内方差随 shot 数减少而单调上升。",
+      "warrant": null,
+      "qualifier": "FewRel 类数据集。",
+      "rebuttal": null,
+      "strength": "moderate",
+      "evidence_refs": ["E-01"],
+      "argument_from": [],
+      "status": "supported"
+    },
+    {
+      "id": "P1.2",
+      "parent": "C1",
+      "level": "proposition",
+      "statement": "控制原型数量后，方差仍能解释 71% 的性能差异。",
+      "warrant": "若方差只是原型数量的代理，控制数量后解释力应消失。",
+      "qualifier": "R²=0.71，95% CI [0.63, 0.79]。",
+      "rebuttal": null,
+      "strength": "moderate",
+      "evidence_refs": ["E-02"],
+      "argument_from": [],
+      "status": "supported"
+    }
+  ],
+  "evidence": [
+    {
+      "id": "E-01",
+      "type": "experiment",
+      "source": "results/variance.json#/by_shot",
+      "metric": "within_class_variance",
+      "value": 0.42,
+      "ci": null,
+      "n": 5,
+      "conditions": { "dataset": "FewRel", "backbone": "BERT-base", "way": 5 },
+      "strength": "moderate",
+      "scope": ["5-way", "1-shot", "英文"],
+      "verified_by": "program",
+      "verified_at": "2026-11-09T02:00:00Z",
+      "supports_text": null
+    },
+    {
+      "id": "E-02",
+      "type": "experiment",
+      "source": "results/ablation.json#/ctrl_proto",
+      "metric": "delta_f1_explained_r2",
+      "value": 0.71,
+      "ci": [0.63, 0.79],
+      "n": 5,
+      "conditions": { "dataset": "FewRel", "control": "prototype_count" },
+      "strength": "moderate",
+      "scope": ["5-way", "1-shot"],
+      "verified_by": "program",
+      "verified_at": "2026-11-09T02:00:00Z",
+      "supports_text": null
+    }
+  ],
+  "sections": [
+    {
+      "id": "S4",
+      "title": "结果",
+      "move": "results",
+      "purpose": "逐条兑现 C1 的证据。",
+      "paragraph_ids": ["P-4.1"],
+      "word_budget": 150
+    }
+  ],
+  "paragraphs": [
+    {
+      "id": "P-4.1",
+      "section_id": "S4",
+      "claim_ref": "P1.1",
+      "move": "support",
+      "topic_sentence": "类内方差随 shot 数减少而单调上升，并在 1-shot 处达到峰值。",
+      "evidence": ["E-01"],
+      "reasoning": "induction",
+      "reader_question": "方差真的随样本减少而上升吗？",
+      "exit_belief": "读者相信：方差与 shot 数呈单调关系，1-shot 最严重。",
+      "word_budget": 150,
+      "forbidden": ["使用未定义缩写", "出现无统计支撑的“显著”"],
+      "draft": null,
+      "status": "todo"
+    }
+  ],
+  "figures": [
+    {
+      "id": "fig2",
+      "claim_ref": "P1.1",
+      "assertion": "类内方差随 shot 数减少而单调上升，1-shot 处最高。",
+      "audience": "同领域审稿人",
+      "panels": [
+        {
+          "label": "a",
+          "sub_assertion": "方差在 1-shot 处最大，随 shot 增加单调下降。",
+          "data_ref": "results/variance.json#/by_shot",
+          "relation": "trend",
+          "encoding": {
+            "type": "line",
+            "x": "shot",
+            "y": "within_class_variance",
+            "color": "backbone",
+            "facet": null,
+            "yerr": "ci95",
+            "band": null,
+            "baseline_zero": false
+          },
+          "annotation": { "text": "1-shot 处方差最高", "at": [1, 0.42] }
+        }
+      ],
+      "style": {
+        "palette": "okabe-ito",
+        "font_pt": 7,
+        "width_mm": 89,
+        "panel_label": "bold-8pt",
+        "grid": "none",
+        "spines": ["left", "bottom"]
+      },
+      "caption": {
+        "what": "5-way k-shot 下的类内方差（FewRel，BERT-base）",
+        "how": "折线为 5 个 seed 的均值，误差棒为 95% CI",
+        "takeaway": "方差随 shot 减少单调上升，1-shot 处最高，支持“方差是退化主因”"
+      },
+      "render": {
+        "tool": "matplotlib",
+        "path": "figures/render/fig2.pdf",
+        "hash": "sha256:pending",
+        "lint": "checks/fig2.lint.json"
+      }
+    }
+  ],
+  "glossary": [
+    { "zh": "类内方差", "en": "within-class variance", "first_use": "P-4.1" },
+    { "zh": "原型网络", "en": "prototypical network", "first_use": "P-4.1" }
+  ]
+}

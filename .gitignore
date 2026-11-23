@@ -1,0 +1,29 @@
+# data / weights / archives
+corpus/
+outputs/
+refs/arch_refs/
+*.pt
+*.pth
+*.ckpt
+*.tif
+*.tiff
+*.npy
+*.npz
+*.zip
+*.7z
+
+# local env
+.venv/
+venv/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# generated PDFs (keep sources instead)
+*.pdf

@@ -1,0 +1,28 @@
+{
+  "corpus": {
+    "aas": {
+      "n": 224,
+      "zh_median": 9917.5,
+      "figs_median": 9.0,
+      "tabs_median": 3.0,
+      "refs_median": 35.0,
+      "abstract_median": 292.0
+    },
+    "xb": {
+      "n": 200,
+      "zh_median": 7903.5,
+      "figs_median": 8.0,
+      "tabs_median": 3.0,
+      "refs_median": 32.0,
+      "abstract_median": 298.5
+    }
+  },
+  "ours": {
+    "zh": 10367,
+    "figs": 6,
+    "tabs": 8,
+    "refs": 6,
+    "abstract_zh": 415,
+    "sections": 9
+  }
+}

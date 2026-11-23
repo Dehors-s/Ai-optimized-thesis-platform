@@ -1,0 +1,269 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://argfirst.local/schemas/paper_ir.schema.json",
+  "title": "PaperIR",
+  "description": "论文论证中间表示：论证层（thesis/claims/evidence）+ 文本层（sections/paragraphs）+ 视觉层（figures）。正文由本 IR 渲染并反向校验。",
+  "type": "object",
+  "required": ["version", "thesis", "claims", "evidence", "sections", "paragraphs", "figures"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+(\\.\\d+)?$",
+      "description": "IR 版本，用于迁移。"
+    },
+    "meta": {
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "language": { "enum": ["zh", "en", "bilingual"] },
+        "venue": { "type": "string", "description": "目标期刊/会议，决定模板与图件规范。" },
+        "paper_type": { "enum": ["empirical", "survey", "system", "theory", "method"] },
+        "updated_at": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "language", "paper_type"],
+      "additionalProperties": true
+    },
+    "thesis": { "$ref": "#/$defs/thesis" },
+    "claims": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/claim" } },
+    "evidence": { "type": "array", "items": { "$ref": "#/$defs/evidence" } },
+    "sections": { "type": "array", "items": { "$ref": "#/$defs/section" } },
+    "paragraphs": { "type": "array", "items": { "$ref": "#/$defs/paragraph" } },
+    "figures": { "type": "array", "items": { "$ref": "#/$defs/figure" } },
+    "glossary": {
+      "type": "array",
+      "description": "术语表：保证全文一致。",
+      "items": {
+        "type": "object",
+        "required": ["zh", "en"],
+        "properties": {
+          "zh": { "type": "string" },
+          "en": { "type": "string" },
+          "first_use": { "type": "string", "description": "首次出现的段落 id" }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "thesis": {
+      "type": "object",
+      "description": "全文唯一的中心论点。四要素缺一不可，否则不可证伪。",
+      "required": ["statement", "object", "intervention", "effect", "conditions", "falsifier"],
+      "properties": {
+        "statement": { "type": "string", "minLength": 20 },
+        "object": { "type": "string", "description": "在什么问题/对象上。" },
+        "intervention": { "type": "string", "description": "做了什么。" },
+        "effect": { "type": "string", "description": "发生了什么变化（含方向与量级）。" },
+        "conditions": { "type": "string", "description": "在什么范围内成立。" },
+        "falsifier": { "type": "string", "description": "什么结果会推翻它。写不出即不可证伪。" },
+        "scope": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "边界条件清单（数据集/语言/规模…）。"
+        }
+      },
+      "additionalProperties": false
+    },
+    "claim": {
+      "type": "object",
+      "description": "主张树节点。根为空 parent；叶子必须有 evidence_refs 或 argument_from。",
+      "required": ["id", "statement", "level", "strength"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^(C|P)[-.]?[0-9][0-9A-Za-z.]*$" },
+        "parent": { "type": ["string", "null"] },
+        "level": { "enum": ["subclaim", "proposition"] },
+        "statement": { "type": "string", "minLength": 8 },
+        "warrant": {
+          "type": ["string", "null"],
+          "description": "推论许可：为什么这些证据能推出这个主张。最常缺失项。"
+        },
+        "qualifier": {
+          "type": ["string", "null"],
+          "description": "限定：适用范围与置信程度。"
+        },
+        "rebuttal": {
+          "type": ["string", "null"],
+          "description": "反例/竞争解释/边界条件。"
+        },
+        "strength": { "enum": ["strong", "moderate", "weak"] },
+        "evidence_refs": { "type": "array", "items": { "type": "string" } },
+        "argument_from": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "argument 型叶子的推理来源（其它 claim id）。"
+        },
+        "status": { "enum": ["draft", "supported", "contested", "dropped"] }
+      },
+      "additionalProperties": false
+    },
+    "evidence": {
+      "type": "object",
+      "description": "证据台账条目。strength 由规则计算，不由模型自评。",
+      "required": ["id", "type", "strength", "scope"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^E-[0-9]+$" },
+        "type": { "enum": ["experiment", "citation", "dataset", "derivation", "observation"] },
+        "source": {
+          "type": "string",
+          "description": "文件路径或 DOI/arXiv id，必须可解析。"
+        },
+        "metric": { "type": ["string", "null"] },
+        "value": { "type": ["number", "string", "null"] },
+        "ci": {
+          "type": ["array", "null"],
+          "items": { "type": "number" },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "n": { "type": ["integer", "null"] },
+        "conditions": { "type": "object", "additionalProperties": true },
+        "strength": { "enum": ["strong", "moderate", "weak"] },
+        "scope": { "type": "array", "items": { "type": "string" } },
+        "verified_by": { "enum": ["program", "human", "nli"] },
+        "verified_at": { "type": "string", "format": "date-time" },
+        "supports_text": {
+          "type": ["string", "null"],
+          "description": "引文型证据：原文中支持该主张的句子（用于 NLI 判定）。"
+        }
+      },
+      "additionalProperties": false
+    },
+    "section": {
+      "type": "object",
+      "required": ["id", "title", "move", "paragraph_ids"],
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "move": {
+          "enum": [
+            "introduction", "related_work", "method", "results",
+            "discussion", "conclusion", "limitations"
+          ]
+        },
+        "purpose": { "type": "string", "description": "本节要推进到哪一步。" },
+        "paragraph_ids": { "type": "array", "items": { "type": "string" } },
+        "word_budget": { "type": "integer", "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
+    "paragraph": {
+      "type": "object",
+      "description": "段落任务单。生成前必须填满，生成后逐项验收。",
+      "required": ["id", "section_id", "claim_ref", "move", "topic_sentence", "word_budget", "exit_belief"],
+      "properties": {
+        "id": { "type": "string" },
+        "section_id": { "type": "string" },
+        "claim_ref": { "type": "string", "description": "推进哪个主张，如 C2 或 C2/P2.1。" },
+        "move": { "enum": ["propose", "support", "qualify", "rebut", "transition"] },
+        "topic_sentence": {
+          "type": "string",
+          "description": "必须是断言，不能是话题；生成后与正文首句比对。"
+        },
+        "evidence": { "type": "array", "items": { "type": "string" } },
+        "reasoning": {
+          "enum": ["deduction", "induction", "contrast", "causal", "analogy", "definition"]
+        },
+        "reader_question": { "type": "string" },
+        "exit_belief": { "type": "string", "description": "读者读完应获得的信念；唯一验收标准。" },
+        "word_budget": { "type": "integer", "minimum": 30 },
+        "forbidden": { "type": "array", "items": { "type": "string" } },
+        "draft": { "type": ["string", "null"] },
+        "status": { "enum": ["todo", "drafted", "grounded", "styled", "accepted"] }
+      },
+      "additionalProperties": false
+    },
+    "figure": {
+      "type": "object",
+      "description": "图 = 可视化断言。一图一 claim，图注首句即断言。",
+      "required": ["id", "claim_ref", "assertion", "panels", "caption"],
+      "properties": {
+        "id": { "type": "string" },
+        "claim_ref": { "type": "string" },
+        "assertion": { "type": "string", "description": "这张图要读者相信的那一句话。" },
+        "audience": { "type": "string" },
+        "panels": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/panel" } },
+        "style": { "$ref": "#/$defs/style" },
+        "caption": { "$ref": "#/$defs/caption" },
+        "render": {
+          "type": "object",
+          "properties": {
+            "tool": { "enum": ["matplotlib", "tikz", "graphviz", "elk", "vega-lite"] },
+            "path": { "type": "string" },
+            "hash": { "type": "string" },
+            "lint": { "type": "string", "description": "lint 报告路径" }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "panel": {
+      "type": "object",
+      "required": ["label", "sub_assertion", "relation", "encoding"],
+      "properties": {
+        "label": { "type": "string" },
+        "sub_assertion": { "type": "string" },
+        "data_ref": { "type": "string" },
+        "relation": {
+          "enum": [
+            "comparison", "trend", "distribution", "correlation",
+            "composition", "mechanism", "ablation", "uncertainty"
+          ]
+        },
+        "encoding": { "$ref": "#/$defs/encoding" },
+        "annotation": {
+          "type": "object",
+          "properties": {
+            "text": { "type": "string" },
+            "at": { "type": "array", "items": { "type": ["string", "number"] } }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "encoding": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "enum": ["dot", "bar", "line", "scatter", "violin", "strip", "heatmap", "graph", "table"]
+        },
+        "x": { "type": ["string", "null"] },
+        "y": { "type": ["string", "null"] },
+        "color": { "type": ["string", "null"] },
+        "facet": { "type": ["string", "null"] },
+        "yerr": { "type": ["string", "null"] },
+        "band": { "type": ["string", "null"] },
+        "baseline_zero": { "type": "boolean", "description": "条形图必须为 true。" }
+      },
+      "additionalProperties": false
+    },
+    "style": {
+      "type": "object",
+      "properties": {
+        "palette": {
+          "type": "string",
+          "description": "如 okabe-ito / viridis / colorbrewer-*；禁止 jet/rainbow。"
+        },
+        "font_pt": { "type": "number", "minimum": 5 },
+        "width_mm": { "type": "number", "description": "单栏 89 / 双栏 183（按 venue）。" },
+        "panel_label": { "type": "string" },
+        "grid": { "enum": ["none", "light"] },
+        "spines": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": false
+    },
+    "caption": {
+      "type": "object",
+      "required": ["what", "how", "takeaway"],
+      "properties": {
+        "what": { "type": "string", "description": "画的是什么（对象、条件）。" },
+        "how": { "type": "string", "description": "怎么读（误差棒/CI/n/编码含义）。" },
+        "takeaway": { "type": "string", "description": "结论；必须与 assertion 语义一致。" }
+      },
+      "additionalProperties": false
+    }
+  }
+}

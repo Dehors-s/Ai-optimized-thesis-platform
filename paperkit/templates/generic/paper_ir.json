@@ -1,0 +1,29 @@
+{
+  "project": {
+    "name": "{{NAME}}",
+    "paper_type": "{{TYPE}}",
+    "mode": "{{MODE}}",
+    "language": "zh",
+    "journal": "",
+    "profiles": null
+  },
+  "thesis": {
+    "statement": "",
+    "object": "",
+    "intervention": "",
+    "effect": "",
+    "conditions": "",
+    "falsifier": ""
+  },
+  "innovation": {
+    "accepted": [],
+    "candidates": []
+  },
+  "decomposition": {
+    "name": "",
+    "items": []
+  },
+  "claims": [],
+  "evidence": [],
+  "sections": []
+}

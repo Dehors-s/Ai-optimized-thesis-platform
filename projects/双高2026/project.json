@@ -1,0 +1,103 @@
+{
+  "name": "双高2026",
+  "paper_type": "engineering",
+  "mode": "project",
+  "language": "zh",
+  "journal": "遥感学报",
+  "discipline": "remote_sensing",
+  "profiles": {
+    "abstract": "rs_abstract",
+    "method": "rs_method",
+    "results": "rs_results",
+    "discussion": "rs_discussion"
+  },
+  "sections": [
+    {
+      "title": "摘要",
+      "role": "abstract"
+    },
+    {
+      "title": "1 引言",
+      "role": "intro"
+    },
+    {
+      "title": "2 任务、数据与评测口径",
+      "role": "problem"
+    },
+    {
+      "title": "3 总体流程",
+      "role": "method",
+      "profile": "rs_method"
+    },
+    {
+      "title": "4 数据检查与利用",
+      "role": "method",
+      "profile": "rs_method"
+    },
+    {
+      "title": "5 表示与模型族",
+      "role": "method",
+      "profile": "rs_method"
+    },
+    {
+      "title": "6 推理解码与稳定性",
+      "role": "method",
+      "profile": "rs_method"
+    },
+    {
+      "title": "7 开集处理：从检测到配额",
+      "role": "method",
+      "profile": "rs_method"
+    },
+    {
+      "title": "8 结果、归因与讨论",
+      "role": "discussion",
+      "profile": "rs_discussion"
+    },
+    {
+      "title": "9 结论与可复现性",
+      "role": "conclusion"
+    }
+  ],
+  "decomposition": {
+    "name": "按误差位置分解",
+    "items": [
+      "数据样本分析",
+      "数据预处理",
+      "异构模型骨干",
+      "训练后处理"
+    ]
+  },
+  "evidence": {
+    "allowed": {},
+    "required": {},
+    "min_units": {}
+  },
+  "citation_slots": {},
+  "rules": {
+    "forbidden_phrases": [
+      "优于",
+      "高于",
+      "纯自研",
+      "证明了",
+      "我方",
+      "队友",
+      "显著领先",
+      "全面超越"
+    ],
+    "required_attribution": {
+      "number": "0.40",
+      "keyword": "P 侧"
+    },
+    "required_statements": [
+      {
+        "if": "0.6584",
+        "then": "0.0014"
+      },
+      {
+        "if": "查表",
+        "then": "干净划分"
+      }
+    ]
+  }
+}
